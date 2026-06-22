@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: p2_postgres
+    environment:
+      POSTGRES_USER: user_p2
+      POSTGRES_PASSWORD: password_p2
+      POSTGRES_DB: db_p2_sql
+    ports:
+      - "5439:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  mongo_db:
+    image: mongo:6.0
+    container_name: p2_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+
+  backend:
+    build: .
+    container_name: p2_backend_api
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - JWT_SECRET=chave_mestre_owasp_token_seguro_p2
+      - MONGO_URI=mongodb://mongo_db:27017/db_p2_nosql
+      - DATABASE_URL=postgres://user_p2:password_p2@postgres_db:5432/db_p2_sql
+    depends_on:
+      - postgres_db
+      - mongo_db
+
+volumes:
+  pgdata:
+  mongodata:
